@@ -138,3 +138,19 @@ and old roadmap status as unverified until checked against data.
   (extra approval) conflicts with Halloran's real complaint (queue too slow, priority field ignored).
 - Open: Marcus's 14 Aug question (should the new weighting treat low-acceptance responders differently?) is
   unanswered. Nothing known after 7 Sep. Not yet looked at: the 49 untaken post-4.2 callouts.
+
+### Learned in session 2 (interviews vs tickets)
+- **Interviews** (wiki Customer interviews, 2-5 Sep, by the designer, console-redesign framing): Aunt Dot (Vesper), Ambrose
+  (Captain Vantage), Halloran (Sgt. Bulwark), Kip (Meteor Mite + The Gale). The 4.2 problem shows up in all four but only
+  when prompted; handlers see effects, not cause. Console asks (dark mode, alert sounds, badge size) are about 2 tickets
+  each. Ambrose's timeline conflicts: ticket 3043 says 12 Aug, interview says about 19 Aug.
+- **Per-responder weekly pings** are in `00-rook/feedback/responder-weekly-pings-for-ravi-conversation.md` (my own query,
+  data ends 31 Aug). Misses rose for all 16 responders after 4.2, which fits the 60 s wait. Only four dropped out of
+  rotation. `routing.py` only reorders, so the penalty alone doesn't explain about 1 ping a week. Sgt. Bulwark is not a
+  control: his misses rose too.
+- **Bias notes:** the seven ticket groups are my own reading, formed after I had a view of 4.2. The pings table is the only
+  source with no selection step. Priya, Wen Li and Marcus each have a stake in the 4.2 story, so ask for production scores,
+  not opinions.
+- **Drafts not yet sent:** messages to Wen Li and Marcus in `00-rook/feedback/drafts-wen-li-and-marcus.md`, asking for
+  current recent-acceptance scores, whether a miss is penalised like a turn-down, and any decay. Also ask Ravi for response
+  times and weeks from 7 Sep. Revised analysis: `customer-interview-analysis-revised.md`.

@@ -16,6 +16,28 @@ prompt library built from your own questions.
 
 ### 1.
 
+If both piles are telling the truth, how can they both be right?
+
 ### 2.
 
+What is the highest priority issue between the 2?
+
 ### 3.
+
+What is Ravis per responder weekly numbers?
+
+### 4.
+
+Confirm the penalty behaviour against production with Wen Li and Marcus
+
+### 5.
+
+can you draft these in my voice
+
+### 6.
+
+customer interview analysis
+
+### 7.
+
+If I'd only read the interviews, what would I have got wrong?
