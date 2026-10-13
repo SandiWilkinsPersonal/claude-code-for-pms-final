@@ -24,6 +24,20 @@ prompt library built from your own questions.
 
 ### 1.
 
+What's contradictory or missing across the wiki pages, the handover note, and the rest of this folder?
+
 ### 2.
 
+Based on everything you now know about Rook, what should I be worried about that nobody has told me?
+
 ### 3.
+
+What am I missing here? What are the blind spots, alternative perspectives, or weak assumptions in this explanation?
+
+### 4.
+
+how do i fix the write error?
+
+### 5.
+
+so did claude.md get updated from the first save failure?
