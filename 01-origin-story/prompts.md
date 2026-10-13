@@ -41,3 +41,7 @@ how do i fix the write error?
 ### 5.
 
 so did claude.md get updated from the first save failure?
+
+### 6.
+
+What part of this informtaion has the most value and can help me determine where the problem is?
