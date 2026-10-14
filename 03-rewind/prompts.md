@@ -57,3 +57,35 @@ ok let me ask again, using the above tables you compared: The previous PM said t
 ### 11.
 
 I am trying to determine if my previous number of missed pings up to 18% matched now that you have assessed both files?
+
+### 12.
+
+Did this happen to everyone, or did it happen to some people much more than others?
+
+### 13.
+
+Can you Analyze the dataset for any missing, null, or defaulted values?
+
+### 14.
+
+ok can you give me a % of what the total missed average was?
+
+### 15.
+
+what is the difference between a ping and a callout?
+
+### 16.
+
+why did the pings count go down so much after august 12?
+
+### 17.
+
+oh ok lets look at the first table in a week by week basis vs the entire dataset?
+
+### 18.
+
+ok lets go back to the missed dataset, is there anything that the 4 responders with the highest missed calls have in common that could be causing them to miss the pings?
+
+### 19.
+
+can you provide a file with a diagram so I can visualize the data
