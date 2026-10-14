@@ -165,3 +165,9 @@ and old roadmap status as unverified until checked against data.
 - **No response-time data exists:** `pings` has only callout, responder, sent_at, outcome. Gap to the next ping gives only
   the ping wait on a miss (91 s before, 63 s after) and about 22 to 24 s to turn down. Vesper took 70 of 86 pings and missed
   3 at the 90 s wait before 4.2, so we can't tell whether the 60 s cut alone explains it. Still the question for Ravi.
+
+### Learned in session 4 (tickets vs pings, "August is quiet")
+- **Tickets and pings agree on timing, not on shape.** Misses jumped on 12 Aug (7 that day, 12 on 13 Aug); tickets lagged about two days (first clear rise 14 Aug). Pings partly recover (misses 38 to 21 a week) but tickets stay about 3x baseline (25 in the week of 31 Aug).
+- **Tickets by `about_responder`:** The Undertow (21) and Farlight (19) lead and keep rising as their pings fall to 1-2. Halfmoon and Corporal Ashgrove are up about 5x without losing pings. Meteor Mite, Vesper, Sgt. Bulwark and The Gale have zero tickets at all, so the collapsed four do not all show up in tickets. Eight tickets say a responder is "much quieter than usual" (from 22 Aug).
+- **"August is quiet" check:** distinct callouts dipped 10-20% (110 in the week of 10 Aug, back to 127), so a small seasonal dip is real. It does not explain misses up about 6x from release day, pings per callout 1.24 to 1.3-1.6, or tickets up 3-4x. No prior year in the data; Ravi has the history. `callouts` has no outcome column, so "untaken" means no `taken` ping.
+- **Missed-ping share:** 2.3% before 12 Aug; 29.4% on 12-16 Aug; 15.1% from 17 Aug; 18.0% across all of 12 Aug onward (110 of 611), which matches the "18%" figure. Peak day 13 Aug was 48%.

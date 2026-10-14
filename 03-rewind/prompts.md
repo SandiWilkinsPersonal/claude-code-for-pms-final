@@ -29,3 +29,31 @@ Was Vesper slower to response prior to the 4.2 release
 ### 4.
 
 can you summarize in 1 sentence what happened to Vesper in plain words?
+
+### 5.
+
+Compare the support_tickets table on rook-database against the pings table. Do they agree with each other? When did people start writing in, and when do the numbers actually move?
+
+### 6.
+
+yea lets split by responder
+
+### 7.
+
+no, The previous PM said this was just August being quiet. Is there anything in this file that would tell me whether that was right?
+
+### 8.
+
+I meant this table from my first question: Compare the support_tickets table on rook-database against the pings table
+
+### 9.
+
+or this is the file I was referencing
+
+### 10.
+
+ok let me ask again, using the above tables you compared: The previous PM said this was just August being quiet. Is there anything in this file that would tell me whether that was right?
+
+### 11.
+
+I am trying to determine if my previous number of missed pings up to 18% matched now that you have assessed both files?
