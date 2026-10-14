@@ -154,3 +154,14 @@ and old roadmap status as unverified until checked against data.
 - **Drafts not yet sent:** messages to Wen Li and Marcus in `00-rook/feedback/drafts-wen-li-and-marcus.md`, asking for
   current recent-acceptance scores, whether a miss is penalised like a turn-down, and any decay. Also ask Ravi for response
   times and weeks from 7 Sep. Revised analysis: `customer-interview-analysis-revised.md`.
+
+### Learned in session 3 (Vesper case study)
+- **Vesper, week by week (pings/taken):** 14/11, 13/10, 15/13, 14/11, 13/11, 14/12 before 4.2, then 12/6 (week of 10 Aug),
+  5/1, 2/0, 1/0. About 8 in 10 taken before; 4 misses in the 4.2 week; almost no pings after. The other three quiet
+  responders look the same.
+- **Why there's no way back in the code:** a score only changes when a ping is answered, nothing decays, a miss costs 0.12
+  and a take earns 0.08. A quiet responder is only pinged as a fallback, and a fallback miss digs them deeper. At 4.2
+  weights, 0.8 of acceptance gap is worth about 15 minutes of travel time. Code is a stub; production unconfirmed.
+- **No response-time data exists:** `pings` has only callout, responder, sent_at, outcome. Gap to the next ping gives only
+  the ping wait on a miss (91 s before, 63 s after) and about 22 to 24 s to turn down. Vesper took 70 of 86 pings and missed
+  3 at the 90 s wait before 4.2, so we can't tell whether the 60 s cut alone explains it. Still the question for Ravi.

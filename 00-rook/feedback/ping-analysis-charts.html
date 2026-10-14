@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Rook Dispatch: pings before and after 4.2</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root { --surface:#fcfcfb; --ink:#0b0b0b; --ink2:#52514e; --muted:#8a897f; --grid:#e6e5e0;
+          --s1:#2a78d6; --s2:#eb6834; --s3:#1baf7a; --s4:#eda100; --neutral:#b9b8b0; }
+  body { font:14px/1.45 Arial, sans-serif; color:var(--ink); background:var(--surface); max-width:820px; margin:24px auto; padding:0 16px; }
+  h1 { font-size:22px; margin:0 0 4px; } h2 { font-size:16px; margin:32px 0 2px; }
+  p.sub { color:var(--ink2); margin:0 0 8px; } p.note { color:var(--ink2); font-size:12px; margin:4px 0 0; }
+  svg { width:100%; height:auto; display:block; } text { font-family:Arial, sans-serif; fill:var(--ink2); font-size:11px; }
+  .legend { display:flex; gap:16px; flex-wrap:wrap; font-size:12px; color:var(--ink2); margin:6px 0; }
+  .legend i { display:inline-block; width:10px; height:10px; border-radius:2px; margin-right:5px; vertical-align:-1px; }
+  table { border-collapse:collapse; width:100%; font-size:12px; margin-top:8px; } th,td { padding:4px 8px; text-align:right; border-bottom:1px solid var(--grid); }
+  th:first-child, td:first-child { text-align:left; } tr.four td { font-weight:bold; }
+  details { margin-top:28px; }
+</style>
+</head>
+<body>
+<h1>Rook Dispatch: what changed after release 4.2</h1>
+<p class="sub">Source: rook.pings, 1,696 rows, 29 Jun to 6 Sep 2026. Release 4.2 shipped Wed 12 Aug (dashed line). Weeks start Monday.</p>
+
+<h2>1. Share of pings by outcome, by week</h2>
+<p class="sub">Missed pings went from about 2% to 14–22% of all pings overnight.</p>
+<div class="legend"><span><i style="background:var(--s1)"></i>Taken</span><span><i style="background:var(--neutral)"></i>Turned down</span><span><i style="background:var(--s2)"></i>Missed</span></div>
+<div id="c1"></div>
+
+<h2>2. Missed share per responder, before vs after 12 Aug</h2>
+<p class="sub">Everyone missed more. Four responders missed more than half their pings.</p>
+<div class="legend"><span><i style="background:var(--muted);border-radius:50%"></i>Before 12 Aug</span><span><i style="background:var(--s2);border-radius:50%"></i>After, the four collapsed responders</span><span><i style="background:var(--s1);border-radius:50%"></i>After, other 12</span></div>
+<div id="c2"></div>
+
+<h2>3. Pings per week to the four collapsed responders</h2>
+<p class="sub">After 12 Aug they were asked far less. From the week of 24 Aug they got 9 pings between them: none taken, 7 missed, 2 turned down.</p>
+<div id="c3"></div>
+
+<h2>4. Callouts per day, by week</h2>
+<p class="sub">Callout volume dipped 20% in the week of 4.2, then partly recovered.</p>
+<div id="c4"></div>
+
+<h2>5. Pings needed per callout, by week</h2>
+<p class="sub">More misses means more pings before someone takes a callout.</p>
+<div id="c5"></div>
+
+<details open><summary><b>Data table (per responder)</b></summary>
+<table id="tbl"><thead><tr><th>Responder</th><th>Pings before</th><th>Pings after</th><th>Missed before</th><th>Missed after</th><th>Acceptance before</th><th>Acceptance after</th></tr></thead><tbody></tbody></table>
+<p class="note">Highlighted rows (bold) are the four collapsed responders. Pings before covers 44 days; pings after covers 26 days.</p>
+</details>
+
+<script>
+const NS = 'http://www.w3.org/2000/svg';
+const weeks = ['29 Jun','6 Jul','13 Jul','20 Jul','27 Jul','3 Aug','10 Aug','17 Aug','24 Aug','31 Aug'];
+const taken  = [132,131,133,132,132,134, 96,104,108,120];
+const turned = [ 37, 35, 35, 39, 34, 36, 43, 26, 30, 24];
+const missed = [  3,  4,  6,  5,  4,  2, 38, 28, 24, 21];
+const callouts = [141,139,138,144,137,138,110,121,124,127];
+const ppc = [1.22,1.22,1.26,1.22,1.24,1.25,1.61,1.31,1.31,1.30];
+const rel = 6 + 2/7; // 12 Aug sits 2 days into the week of 10 Aug
+
+function el(name, attrs, text, parent) {
+  const n = document.createElementNS(NS, name);
+  for (const k in attrs) n.setAttribute(k, attrs[k]);
+  if (text != null) n.textContent = text;
+  if (parent) parent.appendChild(n);
+  return n;
+}
+function svg(id, w, h) { const s = el('svg', {viewBox:`0 0 ${w} ${h}`, role:'img'}); document.getElementById(id).appendChild(s); return s; }
+function tip(node, t) { el('title', {}, t, node); }
+
+// shared week axis; returns x(index) for band centres
+function weekAxis(s, W, H, m, yMax, yFmt, step) {
+  const iw = W - m.l - m.r, ih = H - m.t - m.b;
+  const x = i => m.l + (i + 0.5) * iw / weeks.length;
+  const y = v => m.t + ih - v / yMax * ih;
+  for (let v = 0; v <= yMax + 1e-9; v += step) {
+    el('line', {x1:m.l, x2:W-m.r, y1:y(v), y2:y(v), stroke: v===0 ? '#8a897f' : '#e6e5e0'}, null, s);
+    el('text', {x:m.l-6, y:y(v)+4, 'text-anchor':'end'}, yFmt(v), s);
+  }
+  weeks.forEach((w,i) => el('text', {x:x(i), y:H-m.b+16, 'text-anchor':'middle'}, w, s));
+  return {x, y, iw, ih};
+}
+function releaseLine(s, a, m, H) {
+  const rx = m.l + (rel + 0.5) * a.iw / weeks.length;
+  el('line', {x1:rx, x2:rx, y1:m.t-4, y2:H-m.b, stroke:'#0b0b0b', 'stroke-dasharray':'4 3'}, null, s);
+  el('text', {x:rx+5, y:m.t+6, style:'fill:#0b0b0b'}, '4.2 ships 12 Aug', s);
+}
+
+// 1. stacked outcome shares
+(function(){
+  const W=760,H=300,m={l:40,r:10,t:16,b:28}, s=svg('c1',W,H);
+  const a = weekAxis(s,W,H,m,100,v=>v+'%',25);
+  const bw = a.iw/weeks.length*0.62;
+  weeks.forEach((w,i) => {
+    const tot = taken[i]+turned[i]+missed[i];
+    let base = 0;
+    [[taken[i],'var(--s1)','Taken'],[turned[i],'var(--neutral)','Turned down'],[missed[i],'var(--s2)','Missed']].forEach(([n,c,lab]) => {
+      const p = n/tot*100, y1 = a.y(base+p), y0 = a.y(base);
+      const r = el('rect', {x:a.x(i)-bw/2, y:y1+1, width:bw, height:Math.max(y0-y1-2,0.5), fill:c, rx:2}, null, s);
+      tip(r, `${w}: ${lab} ${n} of ${tot} pings (${p.toFixed(1)}%)`);
+      base += p;
+    });
+    el('text', {x:a.x(i), y:a.y(100)-3, 'text-anchor':'middle', style:'fill:#0b0b0b'}, (missed[i]/tot*100).toFixed(0)+'% missed', s).setAttribute('font-size','10');
+  });
+  releaseLine(s,a,m,H);
+})();
+
+// 2. dumbbell per responder
+const R = [ // name, pBefore, pAfter, mBefore, mAfter, accB, accA, four
+ ['The Undertow',75,14,1,9,77,21,1],['Farlight',75,11,3,7,73,18,1],['Meteor Mite',70,14,2,8,69,21,1],['Vesper',86,17,3,9,81,29,1],
+ ['Sgt. Bulwark',57,39,0,7,75,67,0],['Ironvale',51,39,1,7,76,67,0],['The Drift',39,28,1,5,85,64,0],['The Longcast',45,32,1,5,76,66,0],
+ ['Sgt. Falkirk',63,52,2,8,79,69,0],['Halfmoon',69,33,0,5,72,64,0],['Corporal Ashgrove',63,29,1,4,78,66,0],['Stormwrack',82,63,0,9,79,71,0],
+ ['Cindermark',57,42,1,5,79,69,0],['The Gale',82,69,4,8,78,70,0],['Nightwell',95,70,3,8,76,67,0],['Captain Vantage',76,59,2,6,74,71,0]];
+(function(){
+  const rows = R.map(r => ({n:r[0], b:r[3]/r[1]*100, a:r[4]/r[2]*100, four:r[7], pb:r[1], pa:r[2], mb:r[3], ma:r[4]}))
+                .sort((p,q)=>q.a-p.a);
+  const W=760,rh=24,m={l:130,r:20,t:12,b:28},H=m.t+m.b+rh*rows.length, s=svg('c2',W,H);
+  const iw=W-m.l-m.r, x=v=>m.l+v/70*iw;
+  for (let v=0; v<=70; v+=10) {
+    el('line',{x1:x(v),x2:x(v),y1:m.t,y2:H-m.b,stroke:v===0?'#8a897f':'#e6e5e0'},null,s);
+    el('text',{x:x(v),y:H-m.b+16,'text-anchor':'middle'},v+'%',s);
+  }
+  rows.forEach((r,i) => {
+    const y = m.t + rh*i + rh/2;
+    el('text',{x:m.l-8,y:y+4,'text-anchor':'end',style:r.four?'font-weight:bold;fill:#0b0b0b':''},r.n,s);
+    el('line',{x1:x(r.b),x2:x(r.a),y1:y,y2:y,stroke:'#b9b8b0','stroke-width':2},null,s);
+    const c0 = el('circle',{cx:x(r.b),cy:y,r:5,fill:'#8a897f',stroke:'#fcfcfb','stroke-width':2},null,s);
+    const c1 = el('circle',{cx:x(r.a),cy:y,r:6,fill:r.four?'#eb6834':'#2a78d6',stroke:'#fcfcfb','stroke-width':2},null,s);
+    tip(c0,`${r.n} before 12 Aug: ${r.mb} missed of ${r.pb} pings (${r.b.toFixed(1)}%)`);
+    tip(c1,`${r.n} from 12 Aug: ${r.ma} missed of ${r.pa} pings (${r.a.toFixed(1)}%)`);
+    el('text',{x:x(r.a)+11,y:y+4,style:'fill:#0b0b0b'},r.a.toFixed(0)+'%',s);
+  });
+})();
+
+// generic line chart
+function lineChart(id, series, yMax, step, fmt) {
+  const W=760,H=260,m={l:40,r:90,t:16,b:28}, s=svg(id,W,H);
+  const a = weekAxis(s,W,H,m,yMax,fmt,step);
+  series.forEach(se => {
+    const pts = se.v.map((v,i)=>[a.x(i),a.y(v)]);
+    el('polyline',{points:pts.map(p=>p.join(',')).join(' '),fill:'none',stroke:se.c,'stroke-width':2,'stroke-linejoin':'round'},null,s);
+    pts.forEach((p,i)=>{ const c=el('circle',{cx:p[0],cy:p[1],r:4,fill:se.c,stroke:'#fcfcfb','stroke-width':2},null,s); tip(c,`${se.n}, week of ${weeks[i]}: ${fmt(se.v[i])}`); });
+    if (se.label) el('text',{x:pts[pts.length-1][0]+10,y:pts[pts.length-1][1]+4,style:'fill:#0b0b0b'},se.n,s);
+  });
+  releaseLine(s,a,m,H);
+}
+lineChart('c3',[
+  {n:'Vesper',c:'#2a78d6',label:1,v:[14,13,15,14,13,14,12,5,2,1]},
+  {n:'The Undertow',c:'#eb6834',label:1,v:[12,11,12,13,12,12,11,4,1,1]},
+  {n:'Meteor Mite',c:'#1baf7a',label:1,v:[11,12,10,11,12,11,10,4,2,1]},
+  {n:'Farlight',c:'#eda100',label:1,v:[12,12,11,12,13,12,10,3,1,0]}
+],16,4,v=>v+' pings');
+lineChart('c4',[{n:'Callouts/day',c:'#2a78d6',v:callouts.map(c=>+(c/7).toFixed(1))}],24,6,v=>v);
+lineChart('c5',[{n:'Pings/callout',c:'#eb6834',v:ppc}],2,0.5,v=>v.toFixed(2));
+
+// table
+const tb = document.querySelector('#tbl tbody');
+R.slice().sort((p,q)=>q[7]-p[7]||q[4]/q[2]-p[4]/p[2]).forEach(r => {
+  const tr = document.createElement('tr'); if (r[7]) tr.className='four';
+  tr.innerHTML = `<td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td><td>${r[4]}</td><td>${r[5]}%</td><td>${r[6]}%</td>`;
+  tb.appendChild(tr);
+});
+</script>
+</body>
+</html>
