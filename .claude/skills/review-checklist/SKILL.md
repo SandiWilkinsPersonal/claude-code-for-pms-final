@@ -3,9 +3,9 @@ name: review-checklist
 description: Reviews a product brief against the PM's six-point checklist before it goes any further. Use when the user says "review this brief", "run the review checklist", "check this brief", or points at a brief file or wiki page and asks whether it is ready. Checks owner, success measure, scope consistency, problem-before-fix, technical effort, and open questions.
 ---
 
-# Sandi Product School skill
+# Review checklist
 
-Review checklist (invoke as `review-checklist`). Run the same six checks, in the same order, on any brief. The user should not have to explain the checks again.
+Run the same six checks, in the same order, on any brief. The user should not have to explain the checks again.
 
 ## Input
 

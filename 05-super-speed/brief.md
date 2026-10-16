@@ -102,4 +102,4 @@ Nothing here should be built until these are closed. Owners are proposed.
 - [ ] Communication: handler release note, and whether responders are told about this change. (Nadia, Sofia) Whether they are told the ping wait is open question 5, handled separately.
 
 ## Next step
-Helen to confirm this is the shape she wants. A clickable prototype (`prototype.html`) and a slide deck (`sandi-product-school-ppt.pptx`) already exist for the discussion. Then get the engineering estimate from Marcus, and work the checklist above, starting with the data refresh and the conversation with Wen Li.
+Helen to confirm this is the shape she wants. A clickable prototype (`prototype.html`) and a slide deck (`brief.pptx`) already exist for the discussion. Then get the engineering estimate from Marcus, and work the checklist above, starting with the data refresh and the conversation with Wen Li.
