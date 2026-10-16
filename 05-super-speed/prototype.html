@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Rook Dispatch console — prototype: a way back for quiet responders</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root {
+    --navy:#14213d; --ink:#1d2740; --muted:#5b6780; --line:#d9deea; --bg:#eef1f6; --card:#fff;
+    --teal:#1f7a6f; --teal-bg:#e1f1ee; --amber:#b86e00; --amber-bg:#fdf0d8; --red:#c8452d; --red-bg:#fbe6e1;
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; font-family:Calibri,"Segoe UI",Arial,sans-serif; color:var(--ink); background:var(--bg); }
+  header.top { background:var(--navy); color:#fff; display:flex; align-items:center; gap:24px; padding:0 24px; height:52px; }
+  header.top .brand { font-family:Cambria,Georgia,serif; font-weight:700; font-size:18px; }
+  header.top nav a { color:#c5cde0; margin-right:18px; font-size:14px; text-decoration:none; }
+  header.top nav a.on { color:#fff; border-bottom:2px solid #fca311; padding-bottom:15px; }
+  header.top .who { margin-left:auto; font-size:13px; color:#c5cde0; }
+  .proto-bar { background:#fff8e1; border-bottom:1px solid #ecd9a0; padding:8px 24px; font-size:13px; color:#6b5200; }
+  main { max-width:1040px; margin:0 auto; padding:20px 24px 48px; }
+  h1 { font-family:Cambria,Georgia,serif; font-size:26px; margin:6px 0 4px; }
+  .sub { color:var(--muted); font-size:14px; margin-bottom:16px; }
+  .controls { display:flex; flex-wrap:wrap; gap:16px; align-items:center; background:var(--card); border:1px solid var(--line); border-radius:8px; padding:12px 16px; margin-bottom:18px; }
+  .seg { display:inline-flex; border:1px solid var(--navy); border-radius:6px; overflow:hidden; }
+  .seg button { border:0; background:#fff; color:var(--navy); font:inherit; font-size:14px; padding:7px 14px; cursor:pointer; }
+  .seg button.on { background:var(--navy); color:#fff; }
+  .controls label { font-size:14px; display:flex; align-items:center; gap:6px; cursor:pointer; }
+  .btn { font:inherit; font-size:14px; border:1px solid var(--navy); background:#fff; color:var(--navy); border-radius:6px; padding:7px 12px; cursor:pointer; }
+  .btn:disabled { opacity:.4; cursor:not-allowed; }
+  .alert { display:none; background:var(--red-bg); border:1px solid #e9b4a8; color:#7d2514; border-radius:8px; padding:10px 14px; margin-bottom:16px; font-size:14px; }
+  .alert.show { display:block; }
+  .cards { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+  .card { background:var(--card); border:2px solid var(--line); border-radius:10px; padding:16px; cursor:pointer; text-align:left; font:inherit; color:inherit; }
+  .card:hover { border-color:#9aa6c2; }
+  .card.sel { border-color:var(--navy); }
+  .card .row { display:flex; justify-content:space-between; align-items:center; }
+  .card h2 { font-family:Cambria,Georgia,serif; font-size:20px; margin:0; }
+  .chip { font-size:12px; font-weight:700; border-radius:999px; padding:3px 10px; }
+  .chip.quiet { background:var(--amber-bg); color:var(--amber); }
+  .chip.busy { background:var(--amber-bg); color:var(--amber); }
+  .chip.low { background:var(--red-bg); color:var(--red); }
+  .big.low { color:var(--red); }
+  .chip.ok { background:var(--teal-bg); color:var(--teal); }
+  .big { font-size:30px; font-family:Cambria,Georgia,serif; font-weight:700; margin:10px 0 0; }
+  .line { font-size:14px; color:var(--muted); margin:2px 0 10px; }
+  .why { display:none; font-size:13px; background:var(--teal-bg); color:#14574f; border-radius:6px; padding:6px 10px; margin-bottom:10px; }
+  .why.show { display:block; }
+  .bars { display:flex; align-items:flex-end; gap:5px; height:64px; }
+  .bar { flex:1; background:#8a94a8; border-radius:2px 2px 0 0; min-height:2px; }
+  .bar.after { background:var(--navy); }
+  .bar.proj { background:repeating-linear-gradient(45deg,#1f7a6f,#1f7a6f 3px,#8cc3bb 3px,#8cc3bb 6px); }
+  .bar.low { background:var(--red); }
+  .bar.high { background:var(--amber); }
+  .axis { display:flex; justify-content:space-between; font-size:11px; color:var(--muted); margin-top:3px; }
+  .legend { font-size:12px; color:var(--muted); margin-top:6px; }
+  .panel { margin-top:18px; background:var(--card); border:1px solid var(--line); border-radius:10px; padding:18px 20px; }
+  .panel h3 { font-family:Cambria,Georgia,serif; margin:0 0 6px; font-size:18px; }
+  .panel p { margin:6px 0; font-size:15px; }
+  .say { background:var(--bg); border-left:4px solid var(--navy); padding:10px 14px; border-radius:4px; font-size:15px; }
+  .tabs { display:flex; gap:4px; margin-bottom:14px; }
+  .tabs button { font:inherit; font-size:15px; border:0; background:transparent; padding:8px 14px; cursor:pointer; color:var(--muted); border-bottom:3px solid transparent; }
+  .tabs button.on { color:var(--navy); border-bottom-color:#fca311; font-weight:700; }
+  .view { display:none; } .view.on { display:block; }
+  .phone-wrap { display:flex; gap:28px; align-items:flex-start; flex-wrap:wrap; }
+  .phone { width:290px; height:540px; border:10px solid #1b1f2b; border-radius:34px; background:#fff; padding:18px 16px; display:flex; flex-direction:column; }
+  .phone .st { font-size:12px; color:var(--muted); text-align:center; margin-bottom:10px; }
+  .phone .hd { font-family:Cambria,Georgia,serif; font-weight:700; font-size:18px; margin-bottom:12px; }
+  .phone .empty { margin:auto; text-align:center; color:var(--muted); font-size:15px; }
+  .ping { background:var(--teal-bg); border:1px solid #b9ddd7; border-radius:12px; padding:14px; }
+  .ping b { font-size:16px; }
+  .ping .meta { font-size:13px; color:#14574f; margin:6px 0 12px; }
+  .ping .btns { display:flex; gap:8px; }
+  .ping .btns button { flex:1; font:inherit; font-size:15px; padding:10px; border-radius:8px; cursor:pointer; border:1px solid var(--navy); background:#fff; color:var(--navy); }
+  .ping .btns button.go { background:var(--navy); color:#fff; }
+  .note { font-size:14px; color:var(--muted); max-width:420px; }
+  .note b { color:var(--ink); }
+  footer { margin-top:28px; font-size:12px; color:var(--muted); }
+  @media (max-width:760px){ .cards { grid-template-columns:1fr; } }
+  .phone { height:auto; min-height:540px; }
+  .timer { font-size:15px; font-weight:700; color:#14574f; margin:8px 0 6px; }
+  .timer .tn { font-weight:400; font-size:13px; color:#14574f; }
+  .tbar { height:8px; background:#cfe6e2; border-radius:4px; overflow:hidden; margin-bottom:12px; }
+  .tbar div { height:100%; background:var(--teal); transition:width 1s linear; }
+  .tbar div.urgent { background:var(--red); }
+  .ping.late { background:var(--red-bg); border-color:#e9b4a8; } .ping.late .meta { color:#7d2514; }
+  .again { margin-top:12px; font:inherit; font-size:14px; border:1px solid var(--navy); background:#fff; color:var(--navy); border-radius:8px; padding:8px; cursor:pointer; width:100%; }
+  .hist { margin-top:16px; border-top:1px solid var(--line); padding-top:10px; }
+  .hist .ht { font-weight:700; font-size:14px; margin-bottom:6px; }
+  .hrow { padding:6px 0; border-bottom:1px solid #eef1f6; font-size:13px; }
+  .hrow b { font-size:13px; } .hrow .hp { color:var(--muted); margin-left:6px; }
+  .hrow.now { background:#fffbe9; margin:0 -6px; padding:6px; border-radius:6px; }
+  .pl { display:inline-block; font-style:normal; font-size:12px; border-radius:999px; padding:2px 8px; margin:3px 4px 0 0; }
+  .pl.t { background:var(--teal-bg); color:var(--teal); } .pl.m { background:var(--red-bg); color:var(--red); } .pl.d { background:#e8ebf1; color:var(--muted); }
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="brand">Rook Dispatch</div>
+  <nav><a class="on" href="#" onclick="return false">Coverage</a><a href="#" onclick="return false">Callouts</a><a href="#" onclick="return false">Responders</a><a href="#" onclick="return false">Reports</a></nav>
+  <div class="who">Handler: Kip</div>
+</header>
+<div class="proto-bar"><b>Prototype.</b> Illustrative mock for discussion. Wording is untested and the "with this change" numbers are made up to show the idea. "Today" figures are from the pings table (29 Jun to 31 Aug).</div>
+
+<main>
+  <div class="tabs">
+    <button id="t-console" class="on" onclick="showView('console')">Handler console</button>
+    <button id="t-phone" onclick="showView('phone')">Responder's phone</button>
+  </div>
+
+  <!-- HANDLER CONSOLE -->
+  <section id="v-console" class="view on">
+    <h1>Coverage</h1>
+    <div class="sub">Your responders · weekly pings, 29 Jun to 6 Sep · red = fewer than 10 pings a week, amber = 15 or more</div>
+
+    <div class="controls">
+      <div class="seg" role="group" aria-label="Whose console">
+        <button id="h-kip" class="on" onclick="setHandler('kip')">Kip (Meteor Mite, The Gale)</button>
+        <button id="h-dot" onclick="setHandler('dot')">Aunt Dot (Vesper)</button>
+      </div>
+      <div class="seg" role="group" aria-label="Which version to show">
+        <button id="m-today" class="on" onclick="setMode('today')">Today (4.2)</button>
+        <button id="m-fix" onclick="setMode('fix')">With this change</button>
+      </div>
+      <label id="whyLabel" style="display:none"><input type="checkbox" id="whyBox" onchange="render()"> Show the reason on the card <span style="color:#b86e00">(open decision for Helen)</span></label>
+      <label id="waitLabel" style="display:none"><input type="checkbox" id="waitBox" onchange="reset();render();renderPhone()"> Assume Vesper's misses are about the 60 s wait</label>
+      <button id="missBtn" class="btn" style="display:none" onclick="simulateMiss()">Simulate: keeps missing</button>
+    </div>
+
+    <div id="alert" class="alert"></div>
+    <div class="cards" id="cards"></div>
+
+    <div class="panel" id="panel"></div>
+  </section>
+
+  <!-- RESPONDER PHONE -->
+  <section id="v-phone" class="view">
+    <h1 id="phoneTitle">What Meteor Mite sees</h1>
+    <div class="sub">The same responder, on their phone. Switch the version on the console tab, then come back.</div>
+    <div class="controls" style="margin-bottom:16px">
+      <div class="seg" role="group" aria-label="Phone state">
+        <button id="p-today" class="on" onclick="setMode('today')">Phone today</button>
+        <button id="p-fix" onclick="incoming()">Incoming ping (60 s)</button>
+      </div>
+      <button class="btn" onclick="incoming()">Restart the 60 s countdown</button>
+    </div>
+    <div class="phone-wrap">
+      <div class="phone" id="phone"></div>
+      <div class="note" id="phoneNote"></div>
+    </div>
+  </section>
+
+  <footer>Not in this prototype by design: no settings, no scores or weights shown, no change to the ping wait, no Supply changes. See brief.md.</footer>
+</main>
+
+<script>
+  var WEEKS = ["29 Jun","6 Jul","13 Jul","20 Jul","27 Jul","3 Aug","10 Aug","17 Aug","24 Aug","31 Aug"];
+  // Weekly pings from the pings table (29 Jun to 31 Aug). Projected weeks are illustrative.
+  var R = {
+    mite:   { name:"Meteor Mite", handler:"kip", quiet:true,  base:[11,12,10,11,12,11,10,4,2,1],   fix:[8,10],  before:"about 11" },
+    gale:   { name:"The Gale",    handler:"kip", quiet:false, base:[13,12,13,14,13,13,15,17,20,21], fix:[17,15], before:"about 13" },
+    vesper: { name:"Vesper",      handler:"dot", quiet:true,  base:[14,13,15,14,13,14,12,5,2,1],   fix:[10,12], before:"about 14" }
+  };
+  var HIGH = 15;  // weeks at or above this show in amber
+  var LOW = 9;   // pings a week at or below this (fewer than 10) show in red
+  var HANDLERS = { kip:["mite","gale"], dot:["vesper"] };
+  var state = { handler:"kip", mode:"today", selected:"mite", missed:false, accepted:false };
+
+  function quietId(){ return state.handler==="kip" ? "mite" : "vesper"; }
+  function waitCause(){ return state.mode==="fix" && state.handler==="dot" && document.getElementById("waitBox").checked; }
+  function series(id){
+    var r = R[id];
+    if (state.mode==="today") return r.base;
+    if (id==="vesper" && waitCause()) return r.base.concat([4,3]);
+    return r.base.concat(r.fix);
+  }
+
+  function showView(v){
+    ["console","phone"].forEach(function(n){
+      document.getElementById("v-"+n).classList.toggle("on", n===v);
+      document.getElementById("t-"+n).classList.toggle("on", n===v);
+    });
+    renderPhone();
+  }
+  function reset(){ stopTimer(); state.missed = false; state.outcome = null; state.timer = null; document.getElementById("missBtn").disabled = false; }
+  function setMode(m){
+    state.mode = m; reset();
+    document.getElementById("m-today").classList.toggle("on", m==="today");
+    document.getElementById("m-fix").classList.toggle("on", m==="fix");
+    document.getElementById("p-today").classList.toggle("on", m==="today");
+    document.getElementById("p-fix").classList.toggle("on", m==="fix");
+    sync();
+  }
+  function setHandler(h){
+    state.handler = h; state.selected = HANDLERS[h][0]; reset();
+    document.getElementById("h-kip").classList.toggle("on", h==="kip");
+    document.getElementById("h-dot").classList.toggle("on", h==="dot");
+    sync();
+  }
+  function sync(){
+    var fix = state.mode==="fix";
+    document.getElementById("whyLabel").style.display = fix ? "flex" : "none";
+    document.getElementById("missBtn").style.display = fix ? "inline-block" : "none";
+    document.getElementById("waitLabel").style.display = (fix && state.handler==="dot") ? "flex" : "none";
+    document.getElementById("missBtn").textContent = "Simulate: " + R[quietId()].name + " keeps missing";
+    render(); renderPhone();
+  }
+  function simulateMiss(){ state.missed = true; document.getElementById("missBtn").disabled = true; render(); }
+  function pickCard(id){ state.selected = id; render(); }
+
+  function bars(data, fix){
+    var max = 22, html = '<div class="bars">';
+    data.forEach(function(v,i){
+      var cls = v <= LOW ? "low" : (v >= HIGH ? "high" : i >= 10 ? "proj" : (i >= 6 ? "after" : ""));
+      html += '<div class="bar '+cls+'" style="height:'+Math.round(v/max*100)+'%" title="'+(WEEKS[i]||"illustrative")+': '+v+' pings"></div>';
+    });
+    return html + '</div><div class="axis"><span>29 Jun</span><span>12 Aug (4.2)</span><span>' + (fix ? "illustrative →" : "31 Aug") + '</span></div>';
+  }
+
+  function card(id){
+    var fix = state.mode==="fix", r = R[id], data = series(id), now = data[data.length-1];
+    var chip, big, line, why = "";
+    if (id==="gale") {
+      if (!fix) { chip = '<span class="chip busy">Very busy</span>'; big = now + " pings"; line = "this week. Was " + r.before + " a week before 12 Aug."; }
+      else { chip = '<span class="chip ok">Easing</span>'; big = now + " pings"; line = "this week, down from " + r.base[9] + "."; }
+    } else if (!fix) {
+      chip = '<span class="chip quiet">Quiet</span>'; big = now + (now===1 ? " ping" : " pings"); line = "this week. Was " + r.before + " a week before 12 Aug.";
+    } else if (state.missed) {
+      chip = '<span class="chip quiet">Needs a look</span>'; big = "3 missed in a row"; line = "since coming back. Support has been told.";
+    } else if (id==="vesper" && waitCause()) {
+      chip = '<span class="chip quiet">Back, still missing</span>'; big = now + " pings"; line = "this week. Back in the order, but missing most of them.";
+    } else {
+      chip = '<span class="chip ok">Back in rotation</span>'; big = now + " pings"; line = "this week, up from " + r.base[9] + ".";
+    }
+    if (fix && r.quiet && document.getElementById("whyBox").checked) {
+      why = id==="vesper"
+        ? "Why it was quiet: not fully known yet. The ranking score alone doesn't explain Vesper (open: wait time, travel time, availability)."
+        : "Why it was quiet: a run of missed pings on 12–13 Aug kept it near the bottom of the order. That no longer sticks.";
+    }
+    var low = now <= LOW;
+    if (low) chip = chip.replace("chip quiet", "chip quiet low");
+    return '<button class="card'+(state.selected===id?' sel':'')+'" onclick="pickCard(\''+id+'\')" aria-pressed="'+(state.selected===id)+'">' +
+      '<div class="row"><h2>'+r.name+'</h2>'+chip+'</div>' +
+      '<div class="big'+(low?' low':'')+'">'+big+'</div><div class="line">'+line+'</div>' +
+      '<div class="why'+(why?' show':'')+'">'+why+'</div>' +
+      bars(data, fix) + '</button>';
+  }
+
+  function render(){
+    document.getElementById("cards").innerHTML = HANDLERS[state.handler].map(card).join("");
+    document.getElementById("cards").style.gridTemplateColumns = HANDLERS[state.handler].length===1 ? "minmax(0,1fr) minmax(0,1fr)" : "";
+    var a = document.getElementById("alert"), q = R[quietId()].name;
+    if (state.mode==="fix" && state.missed) {
+      a.className = "alert show";
+      a.innerHTML = "<b>" + q + " has missed 3 pings in a row since coming back.</b> You and Support (Nadia) have been told, so they are not quietly dropped again. Suggested next step: check in with them.";
+    } else { a.className = "alert"; a.innerHTML = ""; }
+
+    var fix = state.mode==="fix", id = state.selected, r = R[id], html = '<h3>' + r.name + ' — what you can tell them</h3>';
+    if (id==="mite") {
+      if (!fix) html += '<div class="say">Nothing true. "Hang in there, it\'ll pick up." Nothing on this screen says why, or whether it will.</div><p>Meteor Mite has been texting all week asking if something is broken. The Gale, in the same city, has not stopped.</p>';
+      else if (state.missed) html += '<div class="say">"I can see you missed a few after coming back. Is something up with your phone or your evenings? Support can help."</div><p>The system flagged this instead of quietly dropping them again.</p>';
+      else html += '<div class="say">"You are back in the order. Expect pings again this week. If you miss a few, I will hear about it and we will sort it out together."</div><p>A true answer, backed by what the screen shows.</p>';
+    } else if (id==="gale") {
+      if (!fix) html += '<div class="say">"It has been a lot. I do not know why it has all landed on you."</div><p>Both cards are on this screen and they look like two different products.</p>';
+      else html += '<div class="say">"The load is spreading back out. You should feel it ease over the next couple of weeks."</div><p>Some pings move back to responders who had gone quiet.</p>';
+    } else {
+      if (!fix) html += '<div class="say">"Vesper has had hardly any callouts since mid-August." Dot cannot say why. She only notices it in how much she is cooking.</div><p>Before 4.2 Vesper took about 8 in 10 pings (11 to 13 a week). Then 5, 2, 1. Dot has told him to keep his phone in his pocket all evening.</p>';
+      else if (state.missed) html += '<div class="say">"Vesper missed a few after coming back. Worth a word with him."</div><p>Dot and Support see it early instead of the pings quietly drying up again.</p>';
+      else if (waitCause()) html += '<div class="say">"He is getting pings again, but the phone is upstairs and they are gone by the time he gets down."</div><p><b>This is why the brief has a Vesper test.</b> If the 60 s wait is the cause, fixing the score alone does not bring Vesper back. Whether returners should get longer is an open decision for Helen.</p>';
+      else html += '<div class="say">"He is back in the order. Expect callouts again this week."</div><p>This assumes the score was the cause. Tick "Assume Vesper\'s misses are about the 60 s wait" to see the other case.</p>';
+    }
+    document.getElementById("panel").innerHTML = html;
+  }
+
+  // Weekly outcomes from the pings table: [week, pings, taken, missed]; turned down is the remainder.
+  var HIST = {
+    mite:   [["10 Aug",10,4,4],["17 Aug",4,1,2],["24 Aug",2,0,1],["31 Aug",1,0,1]],
+    vesper: [["10 Aug",12,6,4],["17 Aug",5,1,3],["24 Aug",2,0,1],["31 Aug",1,0,1]]
+  };
+  var PING_WAIT = 60;   // seconds, unchanged by this brief
+
+  function pill(n, cls, label){ return n ? '<i class="pl '+cls+'">'+n+' '+label+'</i>' : ''; }
+  function histHtml(id){
+    var rows = "";
+    if (state.outcome) {
+      var o = state.outcome;
+      rows += '<div class="hrow now"><b>Just now</b><div>' +
+        (o==="taken" ? pill(1,"t","taken") : o==="missed" ? pill(1,"m","missed") : pill(1,"d","turned down")) + '</div></div>';
+    }
+    HIST[id].slice().reverse().forEach(function(h){
+      var down = h[1]-h[2]-h[3];
+      rows += '<div class="hrow"><b>Week of '+h[0]+'</b><span class="hp">'+h[1]+(h[1]===1?' ping':' pings')+'</span><div>' +
+        pill(h[2],"t","taken") + pill(h[3],"m","missed") + pill(down,"d","turned down") + '</div></div>';
+    });
+    return '<div class="hist"><div class="ht">Recent pings</div>' + rows + '</div>';
+  }
+
+  function stopTimer(){ if (state.timer) { clearInterval(state.timer); state.timer = null; } }
+  function startTimer(){
+    if (state.timer) return;
+    state.secs = waitCause() ? 8 : PING_WAIT;
+    state.timer = setInterval(tick, 1000);
+  }
+  function tick(){
+    state.secs--;
+    if (state.secs <= 0) { stopTimer(); state.outcome = "missed"; renderPhone(); return; }
+    paintTimer();
+  }
+  function paintTimer(){
+    var s = document.getElementById("secs"), f = document.getElementById("tfill");
+    if (s) s.textContent = state.secs + " s left";
+    if (f) { f.style.width = Math.round(state.secs/PING_WAIT*100) + "%"; f.className = state.secs <= 10 ? "urgent" : ""; }
+  }
+  function replay(){ reset(); renderPhone(); }
+  // Jump straight to a fresh incoming ping with the full 60 s showing.
+  function incoming(){
+    document.getElementById("waitBox").checked = false;
+    setMode("fix");
+  }
+
+  function renderPhone(){
+    var id = quietId(), name = R[id].name, fix = state.mode==="fix";
+    var ph = document.getElementById("phone"), note = document.getElementById("phoneNote");
+    document.getElementById("phoneTitle").textContent = "What " + name + " sees";
+    var inner = '<div class="st">9:41 · Rook</div><div class="hd">Callouts</div>';
+    var pending = fix && !state.outcome;
+    if (!pending) stopTimer();
+
+    if (!fix) {
+      inner += '<div class="empty">No callouts.<br>Your phone has been quiet.<br>Nothing here says why.</div>';
+      note.innerHTML = id==="mite"
+        ? "<b>Today.</b> Meteor Mite took about 7 of 11 pings a week before 4.2, then got 4, 2, 1. The phone just sits there. They text their handler asking if something is broken. The history shows the drop, but not why."
+        : "<b>Today.</b> Vesper took about 8 in 10 pings (14 a week) before 4.2, then got 5, 2, 1. The phone just sits there. The history shows the drop, but not why.";
+    } else if (state.outcome === "taken") {
+      inner += '<div class="ping"><b>Taken</b><div class="meta">The callout is yours. Details are on the way.</div></div><button class="again" onclick="replay()">Offer another ping</button>';
+      note.innerHTML = "<b>With this change.</b> " + name + " took a ping and is back in the normal flow. Nothing needed a handler to flip a setting.";
+    } else if (state.outcome === "missed") {
+      inner += '<div class="ping late"><b>Too late</b><div class="meta">Time ran out. This callout has passed to the next responder.</div></div><button class="again" onclick="replay()">Offer another ping</button>';
+      note.innerHTML = waitCause()
+        ? "<b>Wait is the cause.</b> The ping wait is unchanged here (60 s), so a returning Vesper can still run out of time. That is the open decision about the ping wait for returners."
+        : "<b>Missed.</b> The ping ran out and moved on. A miss is recorded separately from a turn-down.";
+    } else if (state.outcome === "turned") {
+      inner += '<div class="ping"><b>Turned down</b><div class="meta">It passes to the next responder. Turning down costs the same as it does today.</div></div><button class="again" onclick="replay()">Offer another ping</button>';
+      note.innerHTML = "<b>Turn-downs are unchanged.</b> The change is about missed pings, not about making it cheaper to say no.";
+    } else {
+      startTimer();
+      inner += '<div class="ping"><b>New callout</b><div class="meta">Offered to you now</div>' +
+        '<div class="timer"><span id="secs">' + state.secs + ' s left</span><span class="tn"> to answer, then it passes on</span></div>' +
+        '<div class="tbar"><div id="tfill" style="width:' + Math.round(state.secs/PING_WAIT*100) + '%"></div></div>' +
+        '<div class="btns"><button class="go" onclick="takePing()">Take it</button><button onclick="turnDown()">Turn down</button></div></div>';
+      note.innerHTML = waitCause()
+        ? "<b>With this change, wait is the cause.</b> You were away from your phone, so most of the 60 s is already gone when you see it. Press <b>Take it</b> fast, or let it run out."
+        : "<b>With this change.</b> After a set period without a ping, an available, qualified responder is offered one again. The countdown shows the 60 s ping wait, which is unchanged. Press <b>Take it</b>, or let it run out.";
+    }
+    ph.innerHTML = inner + histHtml(id);
+    if (pending) paintTimer();
+  }
+  function takePing(){ stopTimer(); state.outcome = "taken"; renderPhone(); }
+  function turnDown(){ stopTimer(); state.outcome = "turned"; renderPhone(); }
+
+  sync();
+</script>
+</body>
+</html>
