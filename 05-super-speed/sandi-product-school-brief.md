@@ -22,6 +22,7 @@ Meanwhile the other responders absorbed the work (about 20% more pings), and han
 - If they miss again on their way back, they are not pushed deeper out of rotation.
 - **No one is left out.** An available, qualified responder can't go more than N days without a ping (N for engineering to propose; design goal: about a week). This holds whatever the underlying cause turns out to be, which matters because the score alone doesn't explain Vesper.
 - **A second miss doesn't quietly drop them again.** If a returning responder misses several pings in a row, the case goes to their handler and Support (Nadia) instead of silently sinking.
+- **In scope, design to be done:** what the responder's phone shows when they return, and whether they're told anything. Sofia designs it; it is not decided here.
 
 **For a handler like Kip:**
 - Each responder card says in plain words how that responder is doing in rotation (illustrative wording only, untested: "Pinged 12 times this week"). No scores, no formulas.
@@ -32,7 +33,7 @@ Meanwhile the other responders absorbed the work (about 20% more pings), and han
 
 ## What it deliberately does not do
 - **Not a setting.** No handler-adjustable weight, timer or switch. Routing config still ships with the release (per the Dispatch one-pager). Helen asked for something people notice, not a control.
-- **Does not revert 4.2.** Proximity weighting was a long-standing responder ask and stays. The 60 second ping wait is not changed here either; that is its own decision (see open questions).
+- **Does not revert 4.2.** Proximity weighting was a long-standing responder ask and stays. The core change leaves the 60 second ping wait alone. Whether returning responders should get longer is a separate decision for Helen (open question 8), not part of the scoring change.
 - **Does not fix "gone before I could answer".** That third of the tickets is explained by the shorter wait and is a separate problem. Not solved by this brief.
 - **Does not make turning jobs down cheaper.** The change is about missed pings. Responders who turn jobs down (Sgt. Bulwark and Captain Vantage were about 25% before 4.2) keep the same cost for it, so "recent acceptance" still separates them from everyone else. Whether any fading applies to turn-downs is open; the default here is that it doesn't.
 - **Does not guarantee anyone a share of callouts.** No quotas or fairness targets. A responder who keeps missing can still rank low; the change is that it isn't permanent and doesn't compound.
@@ -51,6 +52,13 @@ Baselines are from the pings table (29 Jun to 6 Sep).
 - **No one pays for the fix:** no responder who was fine before 4.2 loses more than an agreed share of their pings (share to agree with Marcus and Ravi). Expect The Gale, Nightwell and others who gained after 4.2 to give some back.
 - **Guardrail:** overall acceptance and time-to-accept don't get worse. We also report acceptance **per responder**, not only in aggregate, because the aggregate hid this for weeks.
 
+## Technical effort for the dev team
+**Not yet estimated.** To get from Marcus, with Wen Li on the ranking logic. Estimate: _TBD (Marcus)_.
+
+The estimate should cover, as separate pieces: the scoring change (miss cost and fading), the "no one is left out" rule, the handler and Support flag for a returner who keeps missing, the handler card, the phone view, per-responder acceptance reporting, and the replay test. The Responder Availability Record is unchanged, so no work for Supply is expected.
+
+Helen's note says engineering sees the actual fix as small enough to ship in an afternoon. That is the number change only; the pieces above are more than that.
+
 ## Open questions
 1. **Is the code what production does?** Our copy of `dispatch-routing` is a simplified stub. We need production scores for the four from Wen Li or Marcus before building anything.
 2. **Timer or score?** The 60 second wait and the scoring weights shipped together, and we have no response-time data (`pings` has no response time). A responder may be missing because 60 s is too short for them, in which case a score change alone won't bring them back. Ask Ravi for response times. Vesper still scored well on 17 Aug despite falling pings, so the score isn't the whole story.
@@ -58,6 +66,10 @@ Baselines are from the pings table (29 Jun to 6 Sep).
 4. **How long is "a set period"?** And should a returning responder get a trial run of easy pings first? Engineering to propose.
 5. **Does the app tell responders the wait?** Tickets #3043, #3047 and #3065 ask what the ping wait is. Sofia and Nadia to say whether it's shown or announced; likely a quick separate win.
 6. **Handler wording.** Sofia to test the card wording with Kip and Aunt Dot before we commit.
+7. **How big is this, and who builds it?** Marcus, with Wen Li, to estimate and name the engineer.
+8. **Ping wait for returners.** Keep 60 s, give a returner's first pings the old 90 s, or move the whole wait back? Matters if Vesper's misses are about the wait. (Helen, with response-time data)
+9. **Do turn-downs fade too, or only misses?** Default here: misses only. (Wen Li, Helen)
+10. **Should handlers see "ranked low"?** It reveals routing logic. (Helen)
 
 ## Before this is buildable
 Nothing here should be built until these are closed. Owners are proposed.
@@ -87,7 +99,7 @@ Nothing here should be built until these are closed. Owners are proposed.
 - [ ] Agree success targets and the guardrail with Marcus and Ravi. Per-responder acceptance reporting in place before release.
 - [ ] Rollout and rollback plan: all at once or staged, what we watch, what triggers a rollback. (Marcus)
 - [ ] Confirm no change to the Responder Availability Record; tell Supply if that changes.
-- [ ] Communication: handler release note, and a decision on whether responders are told about the 4.2 wait and this change. (Nadia, Sofia)
+- [ ] Communication: handler release note, and whether responders are told about this change. (Nadia, Sofia) Whether they are told the ping wait is open question 5, handled separately.
 
 ## Next step
-Helen to confirm this is the shape she wants. Then work the checklist above, starting with the data refresh and the conversation with Wen Li, and build a clickable mock for the one-pager.
+Helen to confirm this is the shape she wants. A clickable prototype (`prototype.html`) and a slide deck (`sandi-product-school-ppt.pptx`) already exist for the discussion. Then get the engineering estimate from Marcus, and work the checklist above, starting with the data refresh and the conversation with Wen Li.
