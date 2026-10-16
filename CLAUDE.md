@@ -188,3 +188,9 @@ and old roadmap status as unverified until checked against data.
 - **Still unknown:** the data ends 6-7 Sep and today is 16 Oct, so refresh it first. Card wording and the "with this change" numbers in the prototype are untested or invented. Prototype colours: red under 10 pings a week, amber 15 or more.
 - **Skill:** `.claude/skills/review-checklist` runs a six-point check on any brief (owner, success measure, scope start vs end, problem before fix, technical effort, open questions). It failed the brief on technical effort; the other five passed or were fixed.
 - **Tooling here:** no Node or Python on this computer; PowerPoint can be driven from PowerShell to make decks, and my browser tools can't drive a local HTML file.
+
+### Learned in session 8 (review-checklist in use)
+- **Review result on `05-super-speed/brief.md` (16 Oct):** five of six checks pass; it fails only technical effort, because Marcus's estimate is still TBD. Nothing in it gives a release or date target. Names stay `brief.md` and `brief.pptx`: I renamed them to "sandi product school" names, then undid it, so don't rename them again.
+- **Scheduled:** `monday-brief-review` runs the skill on that brief every Monday at about 9:13 AM (first run 19 Oct), read-only, only while the Claude app is open. Manage it in the app's Scheduled section.
+- **Julien's brief** (`ejuliencoyne/claude-code-for-pms-final`, `05-super-speed/one-pager.md`) fails technical effort and is Partly on owner, success measure, scope and open questions; problem-before-fix passes. His fix: decay old scores, miss penalty -0.06 vs turn-down -0.12, a handler flag when 7-day pings fall below 50% of the 4-week average, and a Support score reset that doesn't exist yet. He says decay alone wouldn't bring the four back, which matches our Vesper finding.
+- **Reading other people's files:** the web fetch tool only returns a summary; use `curl` on the raw GitHub link for the exact text.
